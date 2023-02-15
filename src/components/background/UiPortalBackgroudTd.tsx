@@ -30,7 +30,8 @@ export const UiPortalBackgroudTd = ({
 }: UiPortalBackgroudTdProps) => {
   useEffect(() => {
     if(backgroundTdRef && backgroundTdRef.current) {
-      backgroundTdRef.current.addEventListener('dragover', () => {
+      backgroundTdRef.current.addEventListener('dragover', (event: DragEvent) => {
+        event.preventDefault();
         if(onMouseHover) {
           onMouseHover(colKey, rowKey);
         }
