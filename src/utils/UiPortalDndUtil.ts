@@ -27,17 +27,17 @@ export const UiPortalDndUtil = () => {
 
   const onMouseHover = (colKey:number, rowKey:number) => {
     clearMouseHover();
-      
-    if(cellRefArray && colKey && rowKey) {
+    
+    if(cellRefArray && !Number.isNaN(colKey) && !Number.isNaN(rowKey)) {
       if(focusThumbnail) {
         const { rowSize, colSize } = focusThumbnail;
-
         for(let i = 0; i < rowSize; i ++) {
           const rowIndex = i + rowKey;
+
           for(let a = 0; a < colSize; a++) {
             const colIndex = a + colKey;
 
-            if(!cellRefArray[colIndex][rowIndex]) {
+            if(!cellRefArray[colIndex] || !cellRefArray[colIndex][rowIndex]) {
               hoverdCellList = [];
             } else {
               hoverdCellList.push(cellRefArray[colIndex][rowIndex]);
