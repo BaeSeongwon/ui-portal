@@ -18,8 +18,8 @@ export const UiPortal = () => {
     <div ref={containerRef}>
       <UiPortalBackground
         uiPortalDndUtil={uiPortalDndUtil}
-        colSize={10}
         rowSize={10}
+        colSize={10}
       />
       <UiPortalThumbnailPalette
         uiPortalDndUtil={uiPortalDndUtil}

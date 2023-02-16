@@ -47,11 +47,11 @@ export const UiPortalBackground = ({
     }
   }, [])
 
-  const generateTrTag = (rowCount:number, colCount:number, bgGridRowCol) : Array<JSX.Element> => {
+  const generateTrTag = (rowSize:number, colSize:number, bgGridRowCol) : Array<JSX.Element> => {
 		let trArr: JSX.Element[] = [];
 
-		for(let i = 0; i < rowCount; i++) {
-			const [ tdArr, cellRef ] = generateTdTag(i, colCount, bgGridRowCol);
+		for(let colNo = 0; colNo < colSize; colNo++) {
+			const [ tdArr, cellRef ] = generateTdTag(colNo, rowSize, bgGridRowCol);
 			trArr.push(<tr>{tdArr}</tr>);
       cellRefArray.push(cellRef);
 		}
@@ -60,17 +60,17 @@ export const UiPortalBackground = ({
     return trArr;
 	}
 
-  const generateTdTag = (rowNo: number, colCount: number, bgGridRowCol) : Array<any> => {
+  const generateTdTag = (colNo: number, rowSize: number, bgGridRowCol) : Array<any> => {
 		let tdArr: JSX.Element[] = [];
 		let cellRef: RefObject<HTMLTableCellElement>[] = [];
 
-		for(let j = 0; j < colCount; j++) {
+		for(let rowNo = 0; rowNo < rowSize; rowNo++) {
       const tdRef = useRef<HTMLTableCellElement>(null); 
 			cellRef.push(tdRef);
 
 			tdArr.push(
 				<UiPortalBackgroudTd
-          colKey={j}
+          colKey={colNo}
           rowKey={rowNo} 
           backgroundTdRef={tdRef}
           style={style}
@@ -88,7 +88,7 @@ export const UiPortalBackground = ({
       <UiPortalInnerContainer>
         <UiPortalBackgroundTable>
           <tbody>
-            {generateTrTag(colSize, rowSize, null)}
+            {generateTrTag(rowSize, colSize, null)}
           </tbody>
         </UiPortalBackgroundTable>
       </UiPortalInnerContainer>
