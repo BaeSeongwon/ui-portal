@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import styled from 'styled-components';
-import { UiPortalDndUtilInterface } from '../../utils/UiPortalDndUtilInterface';
+import { UiPortalHookInterface } from '../../hooks/UiPortalHookInterface';
 
 const UiPortalTuhmbnailContainer = styled.div`
   flex: 0 0 auto;
@@ -27,7 +27,7 @@ interface UiPortalThumbnailProps {
   label: string,
   colSize: number,
   rowSize: number,
-  uiPortalDndUtil: UiPortalDndUtilInterface
+  uiPortalHook: UiPortalHookInterface
 }
 
 export const UiPortalThumbnail = ({
@@ -35,7 +35,7 @@ export const UiPortalThumbnail = ({
   label,
   colSize,
   rowSize,
-  uiPortalDndUtil
+  uiPortalHook
 }: UiPortalThumbnailProps) => {
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -43,7 +43,7 @@ export const UiPortalThumbnail = ({
       if(event && event.dataTransfer) {
         const dragObject = {id: id, colSize: colSize, rowSize: rowSize};
         const dragStringObject = JSON.stringify(dragObject);
-        uiPortalDndUtil.setFocusThumbnail(dragObject);
+        uiPortalHook.setFocusThumbnail(dragObject);
         
         event.dataTransfer.clearData();
         event.dataTransfer.setData('text/plain', dragStringObject);

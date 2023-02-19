@@ -2,7 +2,7 @@ import React, { RefObject } from 'react';
 import styled from 'styled-components';
 
 import { UiPortalThumbnail } from './UiPortalTumbnail';
-import { UiPortalDndUtilInterface } from '../../utils/UiPortalDndUtilInterface';
+import { UiPortalHookInterface } from '../../hooks/UiPortalHookInterface';
 
 const UiPortalThumbnailPaletteContainer = styled.div`
   position: relative;
@@ -30,12 +30,12 @@ interface UiPortalThumbnailType {
 }
 
 interface UiPortalThumbnailPaletteProps {
-  uiPortalDndUtil: UiPortalDndUtilInterface,
+  uiPortalHook: UiPortalHookInterface,
   thumbnails: Array<UiPortalThumbnailType>
 }
 
 export const UiPortalThumbnailPalette = ({
-  uiPortalDndUtil,
+  uiPortalHook,
   thumbnails = []
 }: UiPortalThumbnailPaletteProps) => {
   return (
@@ -49,7 +49,7 @@ export const UiPortalThumbnailPalette = ({
               label={item.label} 
               colSize={item.colSize}
               rowSize={item.rowSize}
-              uiPortalDndUtil={uiPortalDndUtil}
+              uiPortalHook={uiPortalHook}
             />
           )
         })}

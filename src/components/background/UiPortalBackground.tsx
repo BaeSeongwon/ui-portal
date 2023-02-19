@@ -2,7 +2,7 @@ import React, { useEffect, useRef, RefObject } from 'react';
 import styled from 'styled-components';
 import { PortalBackgroudTdStyle } from '../UiPortalStyleInterface';
 import { UiPortalBackgroudTd } from './UiPortalBackgroudTd';
-import { UiPortalDndUtilInterface } from '../../utils/UiPortalDndUtilInterface';
+import { UiPortalHookInterface } from '../../hooks/UiPortalHookInterface';
 
 const UiPortalContainer = styled.div`
   position: relative;
@@ -26,26 +26,48 @@ const UiPortalBackgroundTable = styled.table`
 interface UiPortalBackgroundProps {
   colSize: number,
   rowSize: number,
-  uiPortalDndUtil: UiPortalDndUtilInterface,
-  style?: PortalBackgroudTdStyle | null
+  uiPortalHook: UiPortalHookInterface,
+  style?: PortalBackgroudTdStyle | null,
+  getBackgroundBoundingClientRect: Function
+}
+
+export interface UiPortalContainerBoundingClientRectInterface {
+  width: number,
+  height: number,
+  left: number,
+  top: number
 }
 
 export const UiPortalBackground = ({
   colSize = 10,
   rowSize = 10,
-  uiPortalDndUtil,
+  uiPortalHook,
   style = {
     backgroudTdWidth: '70px',
     backgroudTdHeight: '70px'
-  }
+  },
+  getBackgroundBoundingClientRect = () => {}
 }: UiPortalBackgroundProps) => {
   const cellRefArray: RefObject<HTMLTableCellElement>[] = [];
+  const backgroudContainerref = useRef<HTMLTableSectionElement>(null);
 
   useEffect(() => {
-    if(uiPortalDndUtil) {
-      uiPortalDndUtil.setMouseHoverStyleClass('portal-hover-style');
+    if(uiPortalHook) {
+      uiPortalHook.setMouseHoverStyleClass('portal-hover-style');
     }
-  }, [])
+
+    if(backgroudContainerref && backgroudContainerref.current) {
+      const rect = backgroudContainerref.current.getBoundingClientRect();
+      const uiPortalContainerBoundingClientRect: UiPortalContainerBoundingClientRectInterface = {
+        width: rect.width,
+        height: rect.height,
+        left: rect.left,
+        top: rect.top
+      }
+
+      getBackgroundBoundingClientRect(uiPortalContainerBoundingClientRect);
+    }
+  }, []);
 
   const generateTrTag = (rowSize:number, colSize:number, bgGridRowCol) : Array<JSX.Element> => {
 		let trArr: JSX.Element[] = [];
@@ -55,7 +77,7 @@ export const UiPortalBackground = ({
 			trArr.push(<tr>{tdArr}</tr>);
       cellRefArray.push(cellRef);
 		}
-    uiPortalDndUtil.initCellRefArray(cellRefArray);
+    uiPortalHook.initCellRefArray(cellRefArray);
 		
     return trArr;
 	}
@@ -74,8 +96,9 @@ export const UiPortalBackground = ({
           rowKey={rowNo} 
           backgroundTdRef={tdRef}
           style={style}
-          onMouseHover={uiPortalDndUtil.onMouseHover}
-          clearMouseHover={uiPortalDndUtil.clearMouseHover}
+          onMouseHover={uiPortalHook.onMouseHover}
+          clearMouseHover={uiPortalHook.clearMouseHover}
+          appendLayout={uiPortalHook.appendLayout}
 				/>
 			);
 		}
@@ -87,7 +110,7 @@ export const UiPortalBackground = ({
     <UiPortalContainer>
       <UiPortalInnerContainer>
         <UiPortalBackgroundTable>
-          <tbody>
+          <tbody ref={backgroudContainerref}>
             {generateTrTag(rowSize, colSize, null)}
           </tbody>
         </UiPortalBackgroundTable>

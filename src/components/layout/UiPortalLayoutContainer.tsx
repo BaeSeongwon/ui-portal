@@ -1,22 +1,35 @@
 import React from 'react';
 import styled from 'styled-components';
-import { UiPortalLayoutProps } from './UiPortalLayout';
+import { UiPortalContainerBoundingClientRectInterface } from '../background/UiPortalBackground';
+import { UiPortalLayout, UiPortalLayoutProps } from './UiPortalLayout';
+import { UiLayoutContainerStyle } from '../UiPortalStyleInterface';
 
-const LayoutContainer = styled.div`
-  position: absolute;
+const LayoutContainer = styled.div<UiLayoutContainerStyle>`
+  overflow: hidden;
+  height: 0px;
+  /* top: ${({top}) => `${top}px`};
+  left: ${({left}) => `${left}px`};
+  width: ${({width}) => `${width}px`};
+  height: ${({height}) => `${height}px`}; */
 `
 
-
 interface UiPortalLayoutContainerProps {
-  layouts: Array<UiPortalLayoutProps>
+  layouts: Array<UiPortalLayoutProps>,
+  containerBoundingClientRect: UiPortalContainerBoundingClientRectInterface | null
 }
 
 export const UiPortalLayoutContainer = ({
-  layouts = []
+  layouts = [],
+  containerBoundingClientRect = null
 }: UiPortalLayoutContainerProps) => {
+  console.log(layouts)
   return (
-    <LayoutContainer>
-      
-    </LayoutContainer>
+    containerBoundingClientRect ? (
+      <LayoutContainer {...containerBoundingClientRect}>
+        {layouts.map((layout: UiPortalLayoutProps) => (
+          <UiPortalLayout {...layout}/>
+        ))}
+      </LayoutContainer>
+    ) : (<></>)
   )
 }
