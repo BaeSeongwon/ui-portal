@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useRef, DragEvent } from 'react';
 import styled from 'styled-components';
 import { UiPortalHookInterface } from '../../hooks/UiPortalHookInterface';
 
@@ -38,24 +38,22 @@ export const UiPortalThumbnail = ({
   uiPortalHook
 }: UiPortalThumbnailProps) => {
   const thumbnailContainerRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    thumbnailContainerRef.current?.addEventListener('dragstart', (event: DragEvent) => {
-      if(event && event.dataTransfer) {
-        const dragObject = {id: id, colSize: colSize, rowSize: rowSize};
-        const dragStringObject = JSON.stringify(dragObject);
-        uiPortalHook.setFocusThumbnail(dragObject);
-        
-        event.dataTransfer.clearData();
-        event.dataTransfer.setData('text/plain', dragStringObject);
-      }
-    })
-  }, [])
+  
+  const handleDragStart = (event: DragEvent<HTMLDivElement>) => {
+    const dragObject = {id: id, colSize: colSize, rowSize: rowSize, type: 'new'};
+    const dragStringObject = JSON.stringify(dragObject);
+    uiPortalHook.setFocusThumbnail(dragObject);
+    
+    event.dataTransfer.clearData();
+    event.dataTransfer.setData('text/plain', dragStringObject);
+  }
 
   return (
     <UiPortalTuhmbnailContainer
       id={id}
       ref={thumbnailContainerRef}
       draggable
+      onDragStart={handleDragStart}
     >
       <div>
 

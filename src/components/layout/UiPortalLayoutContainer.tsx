@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { UiPortalContainerBoundingClientRectInterface } from '../background/UiPortalBackground';
 import { UiPortalLayout, UiPortalLayoutProps } from './UiPortalLayout';
 import { UiLayoutContainerStyle } from '../UiPortalStyleInterface';
+import { UiPortalHookInterface } from '../../hooks/UiPortalHookInterface';
 
 const LayoutContainer = styled.div<UiLayoutContainerStyle>`
   overflow: hidden;
@@ -14,21 +15,41 @@ const LayoutContainer = styled.div<UiLayoutContainerStyle>`
 `
 
 interface UiPortalLayoutContainerProps {
+  uiPortalHook: UiPortalHookInterface,
   layouts: Array<UiPortalLayoutProps>,
   containerBoundingClientRect: UiPortalContainerBoundingClientRectInterface | null
 }
 
 export const UiPortalLayoutContainer = ({
   layouts = [],
-  containerBoundingClientRect = null
+  containerBoundingClientRect = null,
+  uiPortalHook
 }: UiPortalLayoutContainerProps) => {
-  console.log(layouts)
+  const renderPortalLayout = () => {
+    return (
+      layouts
+        .map((layout: UiPortalLayoutProps, index: number) => (
+          <UiPortalLayout 
+            key={index}
+            id={layout.id}
+            top={layout.top}
+            left={layout.left}
+            width={layout.width}
+            height={layout.height}
+            colSize={layout.colSize}
+            rowSize={layout.rowSize}
+            startPositionPoint={layout.startPositionPoint}
+            uiPortalHook={uiPortalHook}
+            status={layout.status}
+          />
+        ))
+    )
+  }
+
   return (
     containerBoundingClientRect ? (
       <LayoutContainer {...containerBoundingClientRect}>
-        {layouts.map((layout: UiPortalLayoutProps) => (
-          <UiPortalLayout {...layout}/>
-        ))}
+        {renderPortalLayout()}
       </LayoutContainer>
     ) : (<></>)
   )

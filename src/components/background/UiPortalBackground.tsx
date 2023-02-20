@@ -73,8 +73,8 @@ export const UiPortalBackground = ({
 		let trArr: JSX.Element[] = [];
 
 		for(let colNo = 0; colNo < colSize; colNo++) {
-			const [ tdArr, cellRef ] = generateTdTag(colNo, rowSize, bgGridRowCol);
-			trArr.push(<tr>{tdArr}</tr>);
+			const [ tdArr, cellRef ] = generateTdTag(colNo, rowSize);
+			trArr.push(<tr key={colNo}>{tdArr}</tr>);
       cellRefArray.push(cellRef);
 		}
     uiPortalHook.initCellRefArray(cellRefArray);
@@ -82,7 +82,7 @@ export const UiPortalBackground = ({
     return trArr;
 	}
 
-  const generateTdTag = (colNo: number, rowSize: number, bgGridRowCol) : Array<any> => {
+  const generateTdTag = (colNo: number, rowSize: number) : Array<any> => {
 		let tdArr: JSX.Element[] = [];
 		let cellRef: RefObject<HTMLTableCellElement>[] = [];
 
@@ -92,6 +92,7 @@ export const UiPortalBackground = ({
 
 			tdArr.push(
 				<UiPortalBackgroudTd
+          key={`${colNo}${rowNo}`}
           colKey={colNo}
           rowKey={rowNo} 
           backgroundTdRef={tdRef}

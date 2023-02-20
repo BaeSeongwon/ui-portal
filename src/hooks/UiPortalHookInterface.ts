@@ -4,5 +4,7 @@ export interface UiPortalHookInterface {
   setMouseHoverStyleClass: Function,
   onMouseHover: Function,
   clearMouseHover: Function,
-  appendLayout: Function
+  appendLayout: Function,
+  deleteBatchedLayerPositionMap: Function,
+  updateLayoutStatus: Function
 }

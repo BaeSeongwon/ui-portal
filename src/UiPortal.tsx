@@ -39,6 +39,7 @@ export const UiPortal = () => {
       {
         containerBoundingClientRect && (
           <UiPortalLayoutContainer
+            uiPortalHook={uiPortalHook}
             layouts={uiPortalHook.layouts}
             containerBoundingClientRect={containerBoundingClientRect}
           />

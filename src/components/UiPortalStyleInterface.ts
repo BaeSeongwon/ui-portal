@@ -1,3 +1,5 @@
+import { UiPortalLayoutStatusType } from "./layout/UiPortalLayout"
+
 export interface UiPortalStyle {
   backgroud: PortalBackgroudTdStyle
 }
@@ -11,7 +13,8 @@ export interface UiLayoutStyle {
   width: string,
   height: string,
   left: number,
-  top: number
+  top: number,
+  status: UiPortalLayoutStatusType
 }
 
 export interface UiLayoutContainerStyle {

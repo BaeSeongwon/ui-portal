@@ -1,4 +1,6 @@
-import React, { useState, RefObject } from 'react';
+import { useState, RefObject } from 'react';
+import { UiPortalLayoutStatusType } from '../components/layout/UiPortalLayout';
+import { useEventListenerState } from '../hooks/useEventListenerState';
 
 interface FocusThumbnailType {
   id: string,
@@ -6,32 +8,30 @@ interface FocusThumbnailType {
   rowSize: number
 }
 
+interface MaxBackgroundSize {
+  rowSize: number,
+  colSize: number
+}
+
 export const UiPortalHook = () => {
-  const [ layouts, setLayouts ] = useState<Array<any>>([]);
-  let maxRowSize: number = 0;
-  let maxColSize: number = 0;
+  const [ layouts, setLayouts ] = useEventListenerState<Array<any>>([]);
+  const [ mouseHoverStyleClass, setMouseHoverStyleClass ] = useState<string | null>(null);
+  const [ batchedLayerPositionMap, setBatchedLayerPositionMap ] = useState(new Map<string, string>()); 
+  const [ maxSize, setMaxSize ] = useState<MaxBackgroundSize>({rowSize: 0, colSize: 0});
+  const [ focusThumbnail, setFocusThumbnail ] = useState<FocusThumbnailType | null>(null);
+
   let cellRefArray: RefObject<HTMLTableCellElement>[] | null = null;
-  let focusThumbnail: FocusThumbnailType | null = null;
-  let mouseHoverStyleClass: string | null = null;
   let hoverdCellList: RefObject<HTMLTableCellElement>[] = [];
-  let batchedLayerPosition: Array<any> = [];
-  let batchedLayerPositionMap: Map<string, string> | null = null;
 
   const initCellRefArray = (backgroundCellRefArray: RefObject<HTMLTableCellElement>[]) => {
     cellRefArray = backgroundCellRefArray;
   }
 
   const setBackgroundSize = (rowSize: number, colSize: number) => {
-    maxColSize = colSize;
-    maxRowSize = rowSize;
-  }
-
-  const setFocusThumbnail = (thumbnail: FocusThumbnailType) => {
-    focusThumbnail = thumbnail;
-  }
-
-  const setMouseHoverStyleClass = (className: string) => {
-    mouseHoverStyleClass = className;
+    setMaxSize({
+      rowSize: rowSize,
+      colSize: colSize
+    });
   }
 
   const onMouseHover = (colKey:number, rowKey:number) => {
@@ -57,7 +57,7 @@ export const UiPortalHook = () => {
         if(isOverlabPosition(focusThumbnail, colKey, rowKey)) {
           hoverdCellList = [];
         }
-        
+
         hoverdCellList.forEach((cell: RefObject<HTMLTableCellElement>) => {
           if(cell && cell.current && mouseHoverStyleClass) {
             cell.current.classList.add(mouseHoverStyleClass);
@@ -80,12 +80,12 @@ export const UiPortalHook = () => {
   }
 
   const isOverlabPosition = (focusThumbnail: FocusThumbnailType, colKey: number, rowKey: number) => {
-    if(focusThumbnail && batchedLayerPosition.length > 0) {
+    if(focusThumbnail) {
       const { colSize, rowSize } = focusThumbnail;
-      const targetColEndPoint = colKey + colSize - 1;
-      const targetRowEndPoint = rowKey + rowSize - 1;
+      const targetColEndPoint = colKey + colSize;
+      const targetRowEndPoint = rowKey + rowSize;
 
-      if(targetColEndPoint > maxColSize || targetRowEndPoint > maxRowSize) {
+      if(targetColEndPoint > maxSize.colSize || targetRowEndPoint > maxSize.rowSize) {
         return true;
       }
 
@@ -107,28 +107,56 @@ export const UiPortalHook = () => {
 
   const appendLayout = (layoutObject: any) => {
     if(layoutObject && layoutObject.startPositionPoint && focusThumbnail) {
-      const { colKey, rowKey } = layoutObject.startPositionPoint;
+      const { type, startPositionPoint } = layoutObject;
+      const { colKey, rowKey } = startPositionPoint;
       
       if(!isOverlabPosition(focusThumbnail, colKey, rowKey)) {
-        if(!batchedLayerPositionMap) {
-          batchedLayerPositionMap = new Map();
+        if(type === 'move') {
+          const beforeMovedLayout = layouts.find(({id}) => id === layoutObject.id);
+          
+          if(beforeMovedLayout) {
+            // const BMLRowKey = beforeMovedLayout.startPositionPoint.rowKey;
+            // const BMLColKey = beforeMovedLayout.startPositionPoint.colKey;
+            // const BMLRowSize = beforeMovedLayout.rowSize;
+            // const BMLColSize = beforeMovedLayout.colSize;
+
+            // deleteBatchedLayerPositionMap(BMLRowKey, BMLRowSize, BMLColKey, BMLColSize);
+            setLayouts(layouts.map(layout => (layout.id === beforeMovedLayout.id ? layoutObject : layout)));
+          }
+        } else if(type === 'new') {
+          setLayouts(layouts.concat([layoutObject]));
         }
 
-        for(let rowIndex = rowKey; rowIndex < (rowKey + layoutObject.rowSize); rowIndex++) {
-          for(let colIndex = colKey; colIndex < (colKey + layoutObject.colSize); colIndex++) {
-            const position: string = `${colIndex},${rowIndex}`;
-            batchedLayerPositionMap.set(position, '1');
+        updateBatchedLayerPositionMap(rowKey, layoutObject.rowSize, colKey, layoutObject.colSize);
+      }
+    }
+  }
+
+  const updateBatchedLayerPositionMap = (rowKey: number, rowSize: number, colKey: number, colSize: number) => {
+    let map = new Map();
+
+    for(let rowIndex = rowKey; rowIndex < (rowKey + rowSize); rowIndex++) {
+      for(let colIndex = colKey; colIndex < (colKey + colSize); colIndex++) {
+        const position: string = `${colIndex},${rowIndex}`;
+        map.set(position, '1');
+      }
+    }
+
+    setBatchedLayerPositionMap(map);
+  }
+
+  const deleteBatchedLayerPositionMap = (rowKey: number, rowSize: number, colKey: number, colSize: number) => {
+    if(batchedLayerPositionMap) {
+      for(let rowIndex = rowKey; rowIndex < (rowKey + rowSize); rowIndex++) {
+        for(let colIndex = colKey; colIndex < (colKey + colSize); colIndex++) {
+          
+          const position: string = `${colIndex},${rowIndex}`;
+          if(batchedLayerPositionMap.has(position)) {
+            batchedLayerPositionMap.delete(position);
           }
         }
-
-        batchedLayerPosition.push({
-          colKey: colKey,
-          rowKey: rowKey,
-          colSize: layoutObject.colSize,
-          rowSize: layoutObject.rowSize
-        });
-        setLayouts((prevLayout) => prevLayout.concat([layoutObject]));
       }
+      setBatchedLayerPositionMap(batchedLayerPositionMap);
     }
   }
   
@@ -140,6 +168,20 @@ export const UiPortalHook = () => {
     setMouseHoverStyleClass,
     onMouseHover,
     clearMouseHover,
-    appendLayout
+    appendLayout,
+    deleteBatchedLayerPositionMap: (layerId) => {
+      const findLayerObject = layouts.find(layer => layer.id === layerId);
+
+      if(findLayerObject) {
+        const { rowKey, colKey } = findLayerObject.startPositionPoint;
+        deleteBatchedLayerPositionMap(rowKey, findLayerObject.rowSize, colKey, findLayerObject.colSize);
+      }
+    },
+    updateLayoutStatus: (id: string, status: UiPortalLayoutStatusType) => {
+      setLayouts(layouts.map(layout => ({
+        ...layout,
+        status: id === layout.id ? status : layout.status
+      })));
+    }
   };
 }

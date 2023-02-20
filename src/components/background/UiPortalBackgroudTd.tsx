@@ -1,4 +1,4 @@
-import React, { useEffect, RefObject } from 'react';
+import React, { useEffect, RefObject, DragEvent } from 'react';
 import styled from 'styled-components';
 import { PortalBackgroudTdStyle } from '../UiPortalStyleInterface';
 
@@ -30,47 +30,49 @@ export const UiPortalBackgroudTd = ({
   clearMouseHover,
   appendLayout
 }: UiPortalBackgroudTdProps) => {
-  useEffect(() => {
-    if(backgroundTdRef && backgroundTdRef.current) {
-      backgroundTdRef.current.addEventListener('dragover', (event: DragEvent) => {
-        event.preventDefault();
-        if(onMouseHover) {
-          onMouseHover(colKey, rowKey);
-        }
-      });
 
-      backgroundTdRef.current.addEventListener('dragleave', (event: DragEvent) => {
-        event.preventDefault();
-        if(clearMouseHover) {
-          clearMouseHover();
-        }
-      })
-
-      backgroundTdRef.current.addEventListener('drop', (event: DragEvent) => {
-        if(clearMouseHover && event) {
-          const { pageX, offsetX, pageY, offsetY, dataTransfer } = event;
-          const targetLayoutThumbnailString = dataTransfer?.getData('text');
-          clearMouseHover();
-
-          if(targetLayoutThumbnailString && backgroundTdRef.current) {
-            const targetLayoutThumbnail = JSON.parse(targetLayoutThumbnailString);
-
-            appendLayout({
-              startPositionPoint: {
-                colKey: colKey,
-                rowKey: rowKey
-              },
-              left: pageX - offsetX,
-              top:  pageY - offsetY,
-              width: getLayoutWidthAndHeight(targetLayoutThumbnail, true),
-              height: getLayoutWidthAndHeight(targetLayoutThumbnail, false),
-              ...targetLayoutThumbnail
-            });
-          }
-        }
-      });
+  const handleDragOver = (event: DragEvent<HTMLTableCellElement>) => {
+    event.preventDefault();
+    
+    if(onMouseHover) {
+      onMouseHover(colKey, rowKey);
     }
-  }, [backgroundTdRef])
+  }
+
+  const handleDragLeave = (event: DragEvent<HTMLTableCellElement>) => {
+    event.preventDefault();
+
+    if(clearMouseHover) {
+      clearMouseHover();
+    }
+  }
+
+  const handleDrop = (event: DragEvent<HTMLTableCellElement>) => {
+    if(clearMouseHover && event) {
+      const { pageX, pageY, nativeEvent, dataTransfer } = event;
+      const { offsetX, offsetY } = nativeEvent;
+      const targetLayoutThumbnailString = dataTransfer?.getData('text');
+      
+      clearMouseHover();
+
+      if(targetLayoutThumbnailString && backgroundTdRef.current) {
+        const targetLayoutThumbnail = JSON.parse(targetLayoutThumbnailString);
+
+        appendLayout({
+          startPositionPoint: {
+            colKey: colKey,
+            rowKey: rowKey
+          },
+          left: pageX - offsetX,
+          top:  pageY - offsetY,
+          width: getLayoutWidthAndHeight(targetLayoutThumbnail, true),
+          height: getLayoutWidthAndHeight(targetLayoutThumbnail, false),
+          status: 'render',
+          ...targetLayoutThumbnail
+        });
+      }
+    }
+  }
 
   const getStyleProperty = (property: string, defaultValue: string | null) : string => {
     if(property && style && style[property]) {
@@ -102,6 +104,9 @@ export const UiPortalBackgroudTd = ({
       ref={backgroundTdRef}
       backgroudTdWidth={getStyleProperty('backgroudTdWidth', '')}
       backgroudTdHeight={getStyleProperty('backgroudTdHeight', '')}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
     />
   )
 }
